@@ -3,22 +3,22 @@ package c3mm
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 	"runtime/debug"
 	"sort"
 
-	"github.com/retroplasma/flyover-reverse-engineering/pkg/bin"
-	"github.com/retroplasma/flyover-reverse-engineering/pkg/fly/c3mm/internal"
+	"github.com/christiangda/flyover-reverse-engineering/pkg/bin"
+	"github.com/christiangda/flyover-reverse-engineering/pkg/fly/c3mm/codec"
 )
 
 var l = log.New(os.Stderr, "", 0)
 
 func DisableLogs() {
 	l.SetFlags(0)
-	l.SetOutput(ioutil.Discard)
-	//internal.DisableLogs()
+	l.SetOutput(io.Discard)
+	// internal.DisableLogs()
 }
 
 func Parse(data []byte, partIfv1 int) (result C3MM, err error) {
@@ -62,7 +62,7 @@ func parseC3MMv1(data []byte, part int) (c3mm C3MM) {
 	body := data[27:]
 	if c3mm.Header.UncompressedSize != c3mm.Header.CompressedSize {
 		var err error
-		body, err = internal.DecompressLZMA(body, 0, len(body), c3mm.Header.UncompressedSize)
+		body, err = codec.DecompressLZMA(body, 0, len(body), c3mm.Header.UncompressedSize)
 		if err != nil {
 			panic(err)
 		}

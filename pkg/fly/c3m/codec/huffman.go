@@ -1,9 +1,9 @@
-package internal
+package codec
 
 import (
 	"bytes"
 
-	"github.com/retroplasma/flyover-reverse-engineering/pkg/bin"
+	"github.com/christiangda/flyover-reverse-engineering/pkg/bin"
 )
 
 func (table HuffmanTable) Decode(data []byte, len1 int, len2 int, writeBuf *[]byte) {
@@ -123,7 +123,6 @@ func dbgComp(a, b [][]byte) bool {
 }
 
 func (hp HuffmanParams) CreateTable() HuffmanTable {
-
 	type tree struct {
 		index     int16
 		unknown4  int32
@@ -277,7 +276,8 @@ func ReadHuffmanParams(data []byte, offset int) HuffmanParams {
 		int(bin.ReadInt32(data, offset+0)),
 		int(bin.ReadInt32(data, offset+4)),
 		int(bin.ReadInt32(data, offset+8)),
-		int(bin.ReadInt16(data, offset+12))}
+		int(bin.ReadInt16(data, offset+12)),
+	}
 }
 
 type HuffmanTable struct {

@@ -3,22 +3,22 @@ package c3m
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 	"runtime/debug"
 
-	"github.com/retroplasma/flyover-reverse-engineering/pkg/bin"
-	"github.com/retroplasma/flyover-reverse-engineering/pkg/fly/c3m/internal"
-	"github.com/retroplasma/flyover-reverse-engineering/pkg/mth"
+	"github.com/christiangda/flyover-reverse-engineering/pkg/bin"
+	"github.com/christiangda/flyover-reverse-engineering/pkg/mth"
+	"github.com/christiangda/pkg/fly/c3m/codec" // Using a non-internal package
 )
 
 var l = log.New(os.Stderr, "", 0)
 
 func DisableLogs() {
 	l.SetFlags(0)
-	l.SetOutput(ioutil.Discard)
-	internal.DisableLogs()
+	l.SetOutput(io.Discard)
+	codec.DisableLogs()
 }
 
 func Parse(data []byte) (result C3M, err error) {
@@ -95,7 +95,6 @@ func parseC3Mv3(data []byte) C3M {
 }
 
 func parseHeader(data []byte, offset *int) Header {
-
 	qx := bin.ReadFloat64(data, *offset+9)
 	qy := bin.ReadFloat64(data, *offset+17)
 	qz := bin.ReadFloat64(data, *offset+25)
@@ -193,11 +192,11 @@ func parseMesh(data []byte, offset *int) []Mesh {
 			unknownA8 := bin.ReadInt8(data, offset3+0)
 			l.Printf("unknown_a_8: %d \n", unknownA8)
 
-			hpa := internal.ReadHuffmanParams(data, offset3+1)
+			hpa := codec.ReadHuffmanParams(data, offset3+1)
 			ebta := hpa.CreateTable()
 			l.Printf("huffman_params_a: %v -> eb_table_a (%d)\n", hpa, ebta.Length())
 
-			hpb := internal.ReadHuffmanParams(data, offset3+15)
+			hpb := codec.ReadHuffmanParams(data, offset3+15)
 			ebtb := hpb.CreateTable()
 			l.Printf("huffman_params_b: %v -> eb_table_b (%d)\n", hpb, ebtb.Length())
 
@@ -220,9 +219,9 @@ func parseMesh(data []byte, offset *int) []Mesh {
 				panic("??? 2")
 			}
 
-			internal.SetLogPrefix(l.Prefix() + "  ")
+			codec.SetLogPrefix(l.Prefix() + "  ")
 			l.Println("Decompressing")
-			rmd := internal.Decompress(data, dataOffset, ebta, ebtb)
+			rmd := codec.Decompress(data, dataOffset, ebta, ebtb)
 			if rmd.UVCount != gUvCount || rmd.FacesCount != gFacesCount {
 				panic("decompressed mesh counts != header counts")
 			}

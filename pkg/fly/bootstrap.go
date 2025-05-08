@@ -2,14 +2,13 @@ package fly
 
 import (
 	"encoding/xml"
-	"io/ioutil"
 	"math"
 	"os"
 	"path"
 	"regexp"
 
-	"github.com/retroplasma/flyover-reverse-engineering/pkg/mps"
-	"github.com/retroplasma/flyover-reverse-engineering/pkg/web"
+	"github.com/christiangda/flyover-reverse-engineering/pkg/mps"
+	"github.com/christiangda/flyover-reverse-engineering/pkg/web"
 )
 
 type AltitudeManifest struct {
@@ -54,13 +53,13 @@ func GetAltitudeManifest(cache mps.Cache, rm mps.ResourceManifest) (am AltitudeM
 		}
 		if cache.Enabled {
 			// to cache
-			if err = ioutil.WriteFile(rawAmCachePath, rawAm, 0644); err != nil {
+			if err = os.WriteFile(rawAmCachePath, rawAm, 0o644); err != nil {
 				return
 			}
 		}
 	} else if err == nil {
 		// from cache
-		if rawAm, err = ioutil.ReadFile(rawAmCachePath); err != nil {
+		if rawAm, err = os.ReadFile(rawAmCachePath); err != nil {
 			return
 		}
 	} else {
