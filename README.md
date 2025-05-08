@@ -1,8 +1,18 @@
+# Flyover Reverse Engineering
+
+[![Go Report Card](https://goreportcard.com/badge/github.com/christiangda/flyover-reverse-engineering)](https://goreportcard.com/report/github.com/christiangda/flyover-reverse-engineering)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+## NOTES
+
+- This is a fork of [retroplasma/flyover-reverse-engineering](https://github.com/retroplasma/flyover-reverse-engineering) Totally refactored to support `go 1.20+` and `protobuf 3.21+`. The original code was not working with the latest versions of Go and Protobuf. This fork is a work in progress, and I will be adding more features and fixing bugs as I go along.
+- I just modified the code to work with the latest versions of Go and Protobuf. I will be adding more features and fixing bugs as I go along.
+
 <img alt="header" title="Header image: 41.8902, 12.4923" width="100%" src="https://user-images.githubusercontent.com/46618410/94180911-07108600-fe9f-11ea-92d1-3d0960df4c0a.jpg">
 
 Reverse-engineering *Flyover* (3D satellite mode) from Apple Maps. Similar work is done for Google Earth [here](https://github.com/christiangda/earth-reverse-engineering).
 
-#### Status
+## Status
 
 Roughly, these parts have been figured out:
 
@@ -15,7 +25,7 @@ Roughly, these parts have been figured out:
 
 We can authenticate URLs and retrieve textured 3D models from given coordinates (latitude, longitude).
 
-#### General
+## General
 
 Data is stored in map tiles. These five tile styles are used for Flyover:
 
@@ -35,9 +45,9 @@ Data is stored in map tiles. These five tile styles are used for Flyover:
 - ❻: Incremental part number
 - ❼❽: Size/scale. Not sure where its values come from
 
-#### Resource hierarchy
+## Resource hierarchy
 
-```
+```bash
 ResourceManifest
 └─ AltitudeManifest
    ├─ C3MM
@@ -47,7 +57,7 @@ ResourceManifest
 
 Focusing on C3M(M) for now. DTMs are images with a footer and are probably used for the [grid](https://user-images.githubusercontent.com/46618410/53483243-fdcbf700-3a78-11e9-8fc0-ad6cfa8c57cd.png) that is displayed when Maps is loading.
 
-#### Code
+## Code
 
 This repository is structured as follows:
 
@@ -59,16 +69,36 @@ This repository is structured as follows:
 |[scripts](./scripts)| additional scripts           |
 |[vendor](./vendor)  | dependencies                 |
 
-##### Setup
+## Setup
 
-Install [Go](https://golang.org/) 1.15.x and run:
+Install [Go](https://golang.org/) 1.24.x or higher.
 
 ```bash
 go get -d github.com/christiangda/flyover-reverse-engineering/...
 cd "$(go env GOPATH)/src/github.com/christiangda/flyover-reverse-engineering"
 ```
 
-Then edit [config.json](config.json):
+### Configuration
+
+Requirements:
+
+- Requires a valid Apple Maps account. You can use your own or create a new one. The account must be signed in to the Maps app on macOS.
+- You must have installed the Maps app on macOS. The app must be signed in to the same Apple ID as the account you are using.
+- 7-Zip is required to extract the downloaded files. You can install it using Homebrew or download it from the official website.
+
+Install [Homebrew](https://brew.sh/) if you don't have it already:
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+
+Install [7-Zip](https://www.7-zip.org/) if you don't have it already:
+
+```bash
+brew install p7zip
+```
+
+Then edit [config.json](config.json) with your Apple Maps account credentials. The `com.apple.GEO.plist` file is located in the `~/Library/Preferences/` directory.
 
 - automatically (macOS, Linux, WSL):
   - `./scripts/get_config.sh > config.json`
@@ -78,15 +108,19 @@ Then edit [config.json](config.json):
   - `resourceManifestURL`: from [GEOConfigStore.db/com.apple.GEO.plist](#files-on-macos) or [GeoServices](#files-on-macos) binary
   - `tokenP1`: from [GeoServices](#files-on-macos) binary (function: `GEOURLAuthenticationGenerateURL`)
 
-##### Command line programs
+## Command line programs
 
 Here are some command line programs that use code from [pkg](./pkg):
 
-###### Export OBJ [<sup>[code]</sup>](./cmd/export-obj/main.go)
+### Export OBJ [<sup>[code]</sup>](./cmd/export-obj/main.go)
 
 Usage:
 
-```
+```bash
+brew install p7zip
+
+cd ..
+
 go run cmd/export-obj/main.go [lat] [lon] [zoom] [tryXY] [tryH]
 
 Parameter   Description       Example
@@ -100,13 +134,13 @@ tryH        Altitude scan     40
 
 This exports Santa Monica Pier to `./downloaded_files/obj/...`:
 
-```
+```bash
 go run cmd/export-obj/main.go 34.007603 -118.499741 20 3 40
 ```
 
 Optional: Center-scale OBJ using node.js script:
 
-```
+```bash
 node scripts/center_scale_obj.js
 ```
 
@@ -114,31 +148,31 @@ In Blender (compatible tutorial [here](https://github.com/christiangda/earth-rev
 
 <img src="https://user-images.githubusercontent.com/46618410/65068957-fa06b000-d989-11e9-9091-1e71874b0b0c.png" width="300px">
 
-###### Authenticate URL [<sup>[code]</sup>](./cmd/auth/main.go)
+### Authenticate URL [<sup>[code]</sup>](./cmd/auth/main.go)
 
 This authenticates a URL using parameters from `config.json`:
 
-```
+```bash
 go run cmd/auth/main.go [url]
 ```
 
-###### Parse C3M file [<sup>[code]</sup>](./cmd/parse-c3m/main.go)
+### Parse C3M file [<sup>[code]</sup>](./cmd/parse-c3m/main.go)
 
 This parses a C3M v3 file, decompresses meshes, reads JPEG textures and produces a struct that contains a textured 3d model:
 
-```
+```bash
 go run cmd/parse-c3m/main.go [file]
 ```
 
-###### Parse C3MM file [<sup>[code]</sup>](./cmd/parse-c3mm/main.go)
+### Parse C3MM file [<sup>[code]</sup>](./cmd/parse-c3mm/main.go)
 
 This parses a C3MM v1 file. The C3MM files in a region span octrees whose roots are indexed in the first file.
 
-```
+```bash
 go run cmd/parse-c3mm/main.go [file] [[file_number]]
 ```
 
-#### Files on macOS
+## Files on macOS
 
 - `~/Library/Containers/com.apple.geod/Data/Library/Caches/com.apple.geod/GEOConfigStore.db`
   - last resource manifest url
@@ -158,6 +192,6 @@ go run cmd/parse-c3mm/main.go [file] [[file_number]]
 - `/Applications/Maps.app/Contents/MacOS/Maps`
   - loads `VectorKit`
 
-#### Important
+## Important
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

@@ -6,7 +6,7 @@ import (
 	"regexp"
 )
 
-func (rm ResourceManifest) URLPrefixFromStyleID(styleID ResourceManifest_StyleConfig_StyleID) (pfx string, err error) {
+func (rm *ResourceManifest) URLPrefixFromStyleID(styleID ResourceManifest_StyleConfig_StyleID) (pfx string, err error) {
 	for _, v := range rm.StyleConfig {
 		if v.StyleId == styleID {
 			pfx = v.UrlPrefix_1
@@ -19,7 +19,7 @@ func (rm ResourceManifest) URLPrefixFromStyleID(styleID ResourceManifest_StyleCo
 	return
 }
 
-func (rm ResourceManifest) CacheFileNameFromRegexp(regexp *regexp.Regexp) (fn string, err error) {
+func (rm *ResourceManifest) CacheFileNameFromRegexp(regexp *regexp.Regexp) (fn string, err error) {
 	for _, cf := range rm.CacheFile {
 		if regexp.MatchString(cf.FileName) {
 			fn = cf.FileName

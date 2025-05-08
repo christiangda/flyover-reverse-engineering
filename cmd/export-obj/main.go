@@ -47,6 +47,7 @@ func main() {
 	var err error
 	aReq := make([]string, 0)
 	aOpt := make([]string, 0)
+
 	for _, a := range os.Args[1:] {
 		if !strings.HasPrefix(a, "--") {
 			aReq = append(aReq, a)
@@ -54,32 +55,40 @@ func main() {
 			aOpt = append(aOpt, a)
 		}
 	}
+
 	if len(os.Args) == 1 {
 		printUsage("")
 	}
+
 	if len(aReq) != 5 {
 		printUsage("Invalid argument number")
 	}
+
 	lat, err := strconv.ParseFloat(aReq[0], 64)
 	if err != nil {
 		printUsage("Invalid lat")
 	}
+
 	lon, err := strconv.ParseFloat(aReq[1], 64)
 	if err != nil {
 		printUsage("Invalid lon")
 	}
+
 	zoom, err := strconv.ParseInt(aReq[2], 10, 32)
 	if err != nil {
 		printUsage("Invalid zoom")
 	}
+
 	tryXY, err := strconv.ParseInt(aReq[3], 10, 32)
 	if err != nil {
 		printUsage("Invalid tryXY")
 	}
+
 	tryH, err := strconv.ParseInt(aReq[4], 10, 32)
 	if err != nil {
 		printUsage("Invalid tryH")
 	}
+
 	parallel := false
 	for _, a := range aOpt {
 		switch a {
@@ -93,12 +102,14 @@ func main() {
 	cache := mps.Cache{Enabled: true, Directory: "./cache"}
 	err = cache.Init()
 	oth.CheckPanic(err)
+
 	config, err := config.FromJSONFile("./config.json")
 	oth.CheckPanic(err)
 	if !config.IsValid() {
 		fmt.Fprintln(os.Stderr, "please set values in config.json")
 		os.Exit(1)
 	}
+
 	ctx, err := getContext(cache, config)
 	oth.CheckPanic(err)
 
@@ -325,7 +336,7 @@ func (ctx *context) _getC3mm(p fly.Trigger, part int) (c3mm.C3MM, error) {
 	return c3mm.Parse(data, part)
 }
 
-func (ctx context) findPlace(lat, lon float64) (fly.Trigger, error) {
+func (ctx *context) findPlace(lat, lon float64) (fly.Trigger, error) {
 	// radius non spherical yet
 	minDist, minPlace := math.Inf(1), fly.Trigger{}
 
@@ -342,7 +353,7 @@ func (ctx context) findPlace(lat, lon float64) (fly.Trigger, error) {
 	return minPlace, nil
 }
 
-func (ctx context) get(url string) ([]byte, error) {
+func (ctx *context) get(url string) ([]byte, error) {
 	authURL, err := ctx.Context.AuthContext.AuthURL(url)
 	if err != nil {
 		return nil, err
@@ -363,7 +374,7 @@ func get(url string) (data []byte, err error) {
 }
 
 type context struct {
-	Context          mps.Context
+	Context          *mps.Context
 	AltitudeManifest fly.AltitudeManifest
 	URLPrefixC3mm    string
 	URLPrefixC3m     string
@@ -389,6 +400,7 @@ func getContext(cache mps.Cache, config config.Config) (m context, err error) {
 		return
 	}
 
-	m = context{ctx, am, c3mmURLPrefix, c3mURLPrefix, nil}
+	m = context{&ctx, am, c3mmURLPrefix, c3mURLPrefix, nil}
+
 	return
 }

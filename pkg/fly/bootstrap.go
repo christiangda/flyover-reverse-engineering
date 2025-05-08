@@ -33,7 +33,7 @@ var regexAltitudeFile = regexp.MustCompile(`^altitude[a-zA-Z0-9-]*\.xml$`)
 
 // GetAltitudeManifest finds altitude manifest reference in resource manifest
 // and fetches its contents from cache or web and decodes it
-func GetAltitudeManifest(cache mps.Cache, rm mps.ResourceManifest) (am AltitudeManifest, err error) {
+func GetAltitudeManifest(cache mps.Cache, rm *mps.ResourceManifest) (am AltitudeManifest, err error) {
 	// find altitude file name
 	altitudeFile, err := rm.CacheFileNameFromRegexp(regexAltitudeFile)
 	if err != nil {

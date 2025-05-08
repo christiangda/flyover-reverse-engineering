@@ -13,7 +13,7 @@ import (
 
 type Context struct {
 	AuthContext
-	ResourceManifest
+	*ResourceManifest
 }
 
 // Init creates a context from cache or net
@@ -27,7 +27,8 @@ func Init(cache Cache, config config.Config) (ctx Context, err error) {
 		return
 	}
 	authCtx := AuthContext{s, rm, TokenP1(config.TokenP1)}
-	ctx = Context{authCtx, rm}
+	ctx = Context{authCtx, &rm}
+
 	return
 }
 
