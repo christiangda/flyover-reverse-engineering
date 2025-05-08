@@ -1,15 +1,14 @@
 package mps
 
 import (
-	"io/ioutil"
 	"os"
 	"path"
 	"time"
 
-	"github.com/retroplasma/flyover-reverse-engineering/pkg/mps/auth"
-	"github.com/retroplasma/flyover-reverse-engineering/pkg/mps/config"
-	"github.com/retroplasma/flyover-reverse-engineering/pkg/web"
-	"github.com/golang/protobuf/proto"
+	"github.com/christiangda/flyover-reverse-engineering/pkg/mps/auth"
+	"github.com/christiangda/flyover-reverse-engineering/pkg/mps/config"
+	"github.com/christiangda/flyover-reverse-engineering/pkg/web"
+	"google.golang.org/protobuf/proto"
 )
 
 type Context struct {
@@ -40,18 +39,18 @@ func getSession(cache Cache) (s Session, err error) {
 	if cache.Enabled {
 		info, err = os.Stat(rawSidCachePath)
 	}
-	if !cache.Enabled || os.IsNotExist(err) || err == nil && time.Now().Sub(info.ModTime()).Hours() > 24 {
+	if !cache.Enabled || os.IsNotExist(err) || err == nil && time.Since(info.ModTime()).Hours() > 24 {
 		// from generator
 		rawSid = []byte(auth.GenRandStr(40, "0123456789"))
 		if cache.Enabled {
 			// to cache
-			if err = ioutil.WriteFile(rawSidCachePath, rawSid, 0644); err != nil {
+			if err = os.WriteFile(rawSidCachePath, rawSid, 0o644); err != nil {
 				return
 			}
 		}
 	} else if err == nil {
 		// from cache
-		if rawSid, err = ioutil.ReadFile(rawSidCachePath); err != nil {
+		if rawSid, err = os.ReadFile(rawSidCachePath); err != nil {
 			return
 		}
 	} else {
@@ -69,20 +68,20 @@ func getResourceManifest(cache Cache, config config.Config) (rm ResourceManifest
 	if cache.Enabled {
 		info, err = os.Stat(rawRmCachePath)
 	}
-	if !cache.Enabled || os.IsNotExist(err) || err == nil && time.Now().Sub(info.ModTime()).Hours() > 1 {
+	if !cache.Enabled || os.IsNotExist(err) || err == nil && time.Since(info.ModTime()).Hours() > 1 {
 		// from url
 		if rawRm, err = web.Get(config.ResourceManifestURL); err != nil {
 			return
 		}
 		if cache.Enabled {
 			// to cache
-			if err = ioutil.WriteFile(rawRmCachePath, rawRm, 0644); err != nil {
+			if err = os.WriteFile(rawRmCachePath, rawRm, 0o644); err != nil {
 				return
 			}
 		}
 	} else if err == nil {
 		// from cache
-		if rawRm, err = ioutil.ReadFile(rawRmCachePath); err != nil {
+		if rawRm, err = os.ReadFile(rawRmCachePath); err != nil {
 			return
 		}
 	} else {

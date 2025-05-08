@@ -2,7 +2,7 @@ package web
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 )
 
@@ -18,7 +18,7 @@ func Get(url string) (data []byte, err error) {
 		err = fmt.Errorf("http status %d", res.StatusCode)
 		return
 	}
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		return
 	}
@@ -42,7 +42,7 @@ func GetWithCheck(url string, check func(*http.Response) error) (data []byte, er
 	if err != nil {
 		return
 	}
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		return
 	}

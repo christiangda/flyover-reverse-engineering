@@ -1,13 +1,13 @@
-package internal
+package codec
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 
-	"github.com/retroplasma/flyover-reverse-engineering/pkg/bin"
-	"github.com/retroplasma/flyover-reverse-engineering/pkg/oth"
+	"github.com/christiangda/flyover-reverse-engineering/pkg/bin"
+	"github.com/christiangda/flyover-reverse-engineering/pkg/oth"
 )
 
 var l = log.New(os.Stderr, "", 0)
@@ -18,7 +18,7 @@ func SetLogPrefix(s string) {
 
 func DisableLogs() {
 	l.SetFlags(0)
-	l.SetOutput(ioutil.Discard)
+	l.SetOutput(io.Discard)
 }
 
 type RawMeshData struct {
@@ -222,13 +222,13 @@ BIG_LOOP:
 		e1 := res4[align3(3*ctrC)+3*ctrC+2-align3(3*ctrC+2)]
 		e2 := res4[3*ctrC]
 		e3 := res4[align3(3*ctrC)+3*ctrC+1-align3(3*ctrC+1)]
-		vtx_unpacked[e1*3+0] = data_7_vtx[e1*3+0] //e1
+		vtx_unpacked[e1*3+0] = data_7_vtx[e1*3+0] // e1
 		vtx_unpacked[e1*3+1] = data_7_vtx[e1*3+1]
 		vtx_unpacked[e1*3+2] = data_7_vtx[e1*3+2]
-		vtx_unpacked[e2*3+0] = data_7_vtx[e2*3+0] //e2
+		vtx_unpacked[e2*3+0] = data_7_vtx[e2*3+0] // e2
 		vtx_unpacked[e2*3+1] = data_7_vtx[e2*3+1]
 		vtx_unpacked[e2*3+2] = data_7_vtx[e2*3+2]
-		vtx_unpacked[e3*3+0] = data_7_vtx[e3*3+0] //e3
+		vtx_unpacked[e3*3+0] = data_7_vtx[e3*3+0] // e3
 		vtx_unpacked[e3*3+1] = data_7_vtx[e3*3+1]
 		vtx_unpacked[e3*3+2] = data_7_vtx[e3*3+2]
 		bf_res1mul4_a[e1], bf_res1mul4_a[e2], bf_res1mul4_a[e3] = 1, 1, 1
@@ -381,8 +381,8 @@ BIG_LOOP:
 }
 
 func unpackVtx(data_7_vtx []int16, vtx_unpacked []int16, buf_res9vmul3mul4_a []int32,
-	res4 []int32, bf_res1mul4_a []int32, aVal int32) {
-
+	res4 []int32, bf_res1mul4_a []int32, aVal int32,
+) {
 	idx3 := int(buf_res9vmul3mul4_a[aVal])
 	vtx_h := 3 * res4[align3(idx3)+idx3+1-align3(idx3+1)]
 	vtx_i := 3 * res4[align3(idx3)+idx3+2-align3(idx3+2)]
@@ -396,7 +396,8 @@ func unpackVtx(data_7_vtx []int16, vtx_unpacked []int16, buf_res9vmul3mul4_a []i
 }
 
 func unpackUv(data_6_uv []int16, uv_unpacked []int16, res3 *int32, res4 []int32,
-	bf_res9mul12_a []int32, bf_res1mul4_b []int32, ctrCMul3 int) {
+	bf_res9mul12_a []int32, bf_res1mul4_b []int32, ctrCMul3 int,
+) {
 	for _, idx := range []int{
 		align3(ctrCMul3) + ctrCMul3 + 2 - align3(ctrCMul3+2),
 		ctrCMul3,
@@ -495,7 +496,7 @@ func decompressList(outBuf []int32, length int, inBuf []byte, outNum *int, sh in
 		}
 	}
 	*outNum += 8*inBufOff - readShift
-	//l.Println("decompressList result", result)
+	// l.Println("decompressList result", result)
 	_ = result
 }
 
@@ -605,7 +606,7 @@ func processCLERS(bufMeta []int, bufMetaCtr int, bufCLERS []byte, writeBufOff in
 				bufMetaCtr--
 				b5unkn32 = res9vmul3agb
 			default:
-				//l.Println("skipping symbol", clersVal)
+				// l.Println("skipping symbol", clersVal)
 				panic(fmt.Sprintf("unknown symbol %b", clersVal))
 			}
 			tmp1 = 3 * writeBufOff
@@ -664,7 +665,7 @@ outer:
 	if writeBufOffMul3plus2 >= 0 {
 		buf_res9vmul3mul4_a[writeBufOffMul3plus2] = int32(tmp2)
 	}
-	//l.Println("closeStar result", result)
+	// l.Println("closeStar result", result)
 	_ = result
 }
 
@@ -698,12 +699,11 @@ func readBoundary(buf_res9vmul3mul4_a []int32, buf_res9vmul3mul4_b []int32, some
 			break
 		}
 	}
-	//l.Println("readBoundary result", result)
+	// l.Println("readBoundary result", result)
 	_ = result
 }
 
 func decodeCLERS(b2 []byte, res9 int32, b5unkn32 int32, buf_res9vmul3mul4_a []int32) (int, []int, int, []byte) {
-
 	bufMeta := make([]int, res9)
 	bufCLERS := make([]byte, res9*3)
 	writeBufOff := 0

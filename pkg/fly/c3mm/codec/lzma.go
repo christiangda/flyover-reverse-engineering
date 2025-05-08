@@ -1,11 +1,11 @@
-package internal
+package codec
 
 import (
 	"bufio"
 	"bytes"
 	"io"
 
-	"github.com/retroplasma/flyover-reverse-engineering/pkg/bin"
+	"github.com/christiangda/flyover-reverse-engineering/pkg/bin"
 	"github.com/ulikunitz/xz/lzma"
 )
 

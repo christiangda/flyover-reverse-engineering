@@ -4,13 +4,15 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/retroplasma/flyover-reverse-engineering/pkg/mps/config"
+	"github.com/christiangda/flyover-reverse-engineering/pkg/mps/config"
 
-	"github.com/retroplasma/flyover-reverse-engineering/pkg/mps"
+	"github.com/christiangda/flyover-reverse-engineering/pkg/mps"
 )
 
-var cache = mps.Cache{Enabled: true, Directory: "./cache"}
-var configFile = "./config.json"
+var (
+	cache      = mps.Cache{Enabled: true, Directory: "./cache"}
+	configFile = "./config.json"
+)
 
 func main() {
 	if len(os.Args) != 2 {

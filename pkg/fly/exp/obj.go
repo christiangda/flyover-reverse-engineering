@@ -4,13 +4,12 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"runtime/debug"
 
-	"github.com/retroplasma/flyover-reverse-engineering/pkg/fly/c3m"
-	"github.com/retroplasma/flyover-reverse-engineering/pkg/oth"
+	"github.com/christiangda/flyover-reverse-engineering/pkg/fly/c3m"
+	"github.com/christiangda/flyover-reverse-engineering/pkg/oth"
 )
 
 var transform = true
@@ -66,7 +65,7 @@ func (e *OBJExport) Next(c3m c3m.C3M, subPfx string) (err error) {
 	dir, fnPfx := e.dir, e.fnPfx
 
 	for i, material := range c3m.Materials {
-		oth.CheckPanic(ioutil.WriteFile(path.Join(dir, fmt.Sprintf("%s%s_%d.jpg", fnPfx, subPfx, i)), material.JPEG, 0655))
+		oth.CheckPanic(os.WriteFile(path.Join(dir, fmt.Sprintf("%s%s_%d.jpg", fnPfx, subPfx, i)), material.JPEG, 0o655))
 		nxt := fmt.Sprintf(`
 newmtl mtl_%s_%d
 Kd 1.000 1.000 1.000
@@ -83,8 +82,7 @@ map_Kd %s%s_%d.jpg
 		for _, vtx := range mesh.Vertices {
 			x, y, z := float64(vtx.X), float64(vtx.Y), float64(vtx.Z)
 			if transform {
-				x, y, z =
-					c3m.Header.Rotation[0]*x+c3m.Header.Rotation[1]*y+c3m.Header.Rotation[2]*z,
+				x, y, z = c3m.Header.Rotation[0]*x+c3m.Header.Rotation[1]*y+c3m.Header.Rotation[2]*z,
 					c3m.Header.Rotation[3]*x+c3m.Header.Rotation[4]*y+c3m.Header.Rotation[5]*z,
 					c3m.Header.Rotation[6]*x+c3m.Header.Rotation[7]*y+c3m.Header.Rotation[8]*z
 				x += c3m.Header.Translation[0]
@@ -111,7 +109,7 @@ map_Kd %s%s_%d.jpg
 
 func create(fn string) (*os.File, error) {
 	perm := os.O_CREATE | os.O_WRONLY | os.O_TRUNC
-	return os.OpenFile(fn, perm, 0655)
+	return os.OpenFile(fn, perm, 0o655)
 }
 
 func (w *writer) write(txt string) {

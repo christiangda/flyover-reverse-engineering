@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"math"
 	"net/http"
@@ -13,15 +12,15 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/retroplasma/flyover-reverse-engineering/pkg/fly"
-	"github.com/retroplasma/flyover-reverse-engineering/pkg/fly/c3m"
-	"github.com/retroplasma/flyover-reverse-engineering/pkg/fly/c3mm"
-	"github.com/retroplasma/flyover-reverse-engineering/pkg/fly/exp"
-	"github.com/retroplasma/flyover-reverse-engineering/pkg/mps"
-	"github.com/retroplasma/flyover-reverse-engineering/pkg/mps/config"
-	"github.com/retroplasma/flyover-reverse-engineering/pkg/mth"
-	"github.com/retroplasma/flyover-reverse-engineering/pkg/oth"
-	"github.com/retroplasma/flyover-reverse-engineering/pkg/web"
+	"github.com/christiangda/flyover-reverse-engineering/pkg/fly"
+	"github.com/christiangda/flyover-reverse-engineering/pkg/fly/c3m"
+	"github.com/christiangda/flyover-reverse-engineering/pkg/fly/c3mm"
+	"github.com/christiangda/flyover-reverse-engineering/pkg/fly/exp"
+	"github.com/christiangda/flyover-reverse-engineering/pkg/mps"
+	"github.com/christiangda/flyover-reverse-engineering/pkg/mps/config"
+	"github.com/christiangda/flyover-reverse-engineering/pkg/mth"
+	"github.com/christiangda/flyover-reverse-engineering/pkg/oth"
+	"github.com/christiangda/flyover-reverse-engineering/pkg/web"
 )
 
 var l = log.New(os.Stderr, "", 0)
@@ -45,7 +44,6 @@ func printUsage(msg string) {
 }
 
 func main() {
-
 	var err error
 	aReq := make([]string, 0)
 	aOpt := make([]string, 0)
@@ -111,11 +109,11 @@ func main() {
 	oth.CheckPanic(err)
 	l.Println(p.Name, p.Radius, p.Lat, p.Lon)
 
-	err = os.MkdirAll(fmt.Sprintf("./cache/c3mm/%d_%d", p.Region, p.Version), 0755)
+	err = os.MkdirAll(fmt.Sprintf("./cache/c3mm/%d_%d", p.Region, p.Version), 0o755)
 	oth.CheckPanic(err)
 
 	exportDir := fmt.Sprintf("./downloaded_files/obj/%f-%f-%d-%d-%d", lat, lon, zoom, tryXY, tryH)
-	err = os.MkdirAll(exportDir, 0755)
+	err = os.MkdirAll(exportDir, 0o755)
 	oth.CheckPanic(err)
 
 	xp := 0
@@ -183,7 +181,6 @@ func main() {
 }
 
 func (ctx *context) checkTile(p fly.Trigger, z, y, x, h int) (bool, error) {
-
 	tile := c3mm.Tile{Z: z, Y: y, X: x, H: h}
 
 	c3mm0, err := ctx.getC3mm(p, 0)
@@ -307,7 +304,7 @@ func (ctx *context) getC3mm(p fly.Trigger, part int) (c3mm.C3MM, error) {
 
 func (ctx *context) _getC3mm(p fly.Trigger, part int) (c3mm.C3MM, error) {
 	fn := fmt.Sprintf("./cache/c3mm/%d_%d/%d", p.Region, p.Version, part)
-	file, err := ioutil.ReadFile(fn)
+	file, err := os.ReadFile(fn)
 	if err != nil && !os.IsNotExist(err) {
 		return c3mm.C3MM{}, err
 	}
@@ -319,7 +316,7 @@ func (ctx *context) _getC3mm(p fly.Trigger, part int) (c3mm.C3MM, error) {
 	if err != nil {
 		return c3mm.C3MM{}, err
 	}
-	if ioutil.WriteFile(fn+".tmp", data, 0655) != nil {
+	if os.WriteFile(fn+".tmp", data, 0o655) != nil {
 		return c3mm.C3MM{}, err
 	}
 	if os.Rename(fn+".tmp", fn) != nil {
